@@ -217,7 +217,6 @@
         <div class="text-center mb-8 animate-in">
             <h1 class="text-3xl md:text-6xl font-bold gradient-text mb-3 sm:mb-5">Divergent Lunch Scheduler</h1>
             <div class="mt-4 flex justify-center gap-4 flex-wrap">
-                <!-- <div class="stats-badge bg-green-100 text-green-800">15 Team Members</div> -->
                 <div class="stats-badge bg-blue-100 text-blue-800">4 Seats per Slot</div>
                 <div class="stats-badge bg-purple-100 text-purple-800">5 Time Slots Daily</div>
             </div>
@@ -244,23 +243,24 @@
     </div>
 
     <script>
-        // Team members data (removed Shoaib, Sofik Sir, Tanin Sir, Kobir Khala)
+        // Team members data - Fixed: Only one Doctor, Shakil and Sihab are separate people
         const teamMembers = [
-            { id: 1, name: "Dr. Shahin/Dr. Fuyad" },
+            { id: 1, name: "Doctor" },
             { id: 2, name: "Shourov" },
-            { id: 3, name: "Shakil/Sihab" },
-            { id: 4, name: "Mahmudul" },
-            { id: 5, name: "Simul" },
-            { id: 6, name: "Soumik" },
-            { id: 7, name: "TL Foysal Ahmed" },
-            { id: 8, name: "Faisal" },
-            { id: 9, name: "Monir" },
-            { id: 10, name: "Sakib" },
-            { id: 11, name: "Siam" },
-            { id: 12, name: "Shodorson" },
-            { id: 13, name: "Nur Nabi" },
-            { id: 14, name: "IT Kabbik" },
-            { id: 15, name: "Nahin" }
+            { id: 3, name: "Shakil" },
+            { id: 4, name: "Sihab" },
+            { id: 5, name: "Mahmudul" },
+            { id: 6, name: "Simul" },
+            { id: 7, name: "Soumik" },
+            { id: 8, name: "TL Foysal Ahmed" },
+            { id: 9, name: "Faisal" },
+            { id: 10, name: "Monir" },
+            { id: 11, name: "Sakib" },
+            { id: 12, name: "Siam" },
+            { id: 13, name: "Shodorson" },
+            { id: 14, name: "Nur Nabi" },
+            { id: 15, name: "IT Kabbik" },
+            { id: 16, name: "Nahin" }
         ];
 
         const months = [
@@ -401,7 +401,6 @@
             createMonthSelector();
             createWeekTabs();
             showSchedule();
-            displayStatistics();
         }
 
         // Select week
@@ -453,7 +452,6 @@
         createMonthSelector();
         createWeekTabs();
         showSchedule();
-        displayStatistics();
     </script>
 </body>
 </html>
