@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divergent Lunch Scheduler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Karla:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #1a472a;
+            --primary-light: #2d5f3f;
+            --accent: #d4af37;
+            --bg-cream: #faf8f3;
+            --text-dark: #2c2c2c;
+            --border: #e8e4dc;
+        }
+        
+        body {
+            font-family: 'Karla', sans-serif;
+            background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'DM Serif Display', serif;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(26, 71, 42, 0.08);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 30px rgba(26, 71, 42, 0.12);
+            transform: translateY(-2px);
+        }
+        
+        .month-selector {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: white;
+        }
+        
+        .month-selector.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .month-selector:hover:not(.active) {
+            border-color: var(--primary-light);
+            background: #f0f7f0;
+        }
+        
+        .week-tab {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .week-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .week-tab:hover:not(.active) {
+            color: var(--primary-light);
+        }
+        
+        .day-column {
+            border-right: 1px solid var(--border);
+            min-width: 200px;
+        }
+        
+        .day-column:last-child {
+            border-right: none;
+        }
+        
+        .person-slot {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .slot-1 {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 3px solid #4caf50;
+        }
+        
+        .slot-2 {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-left: 3px solid #ff9800;
+        }
+        
+        .slot-3 {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 3px solid #2196f3;
+        }
+        
+        .slot-4 {
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+            border-left: 3px solid #e91e63;
+        }
+        
+        .slot-5 {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-left: 3px solid #9c27b0;
+        }
+        
+        .person-slot:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stats-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 2px;
+        }
+        
+        .badge-first {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .badge-second {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .badge-third {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .badge-fourth {
+            background: #e91e63;
+            color: white;
+        }
+        
+        .badge-fifth {
+            background: #9c27b0;
+            color: white;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid var(--border);
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e9 100%);
+            border-left: 4px solid var(--primary);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8 animate-in">
+            <h1 class="text-3xl md:text-6xl font-bold gradient-text mb-3 sm:mb-5">Divergent Lunch Scheduler</h1>
+            <div class="mt-4 flex justify-center gap-4 flex-wrap">
+                <!-- <div class="stats-badge bg-green-100 text-green-800">15 Team Members</div> -->
+                <div class="stats-badge bg-blue-100 text-blue-800">4 Seats per Slot</div>
+                <div class="stats-badge bg-purple-100 text-purple-800">5 Time Slots Daily</div>
+            </div>
+        </div>
+
+        <!-- Month Selector -->
+        <div class="card p-6 mb-6 animate-in" style="animation-delay: 0.1s">
+            <h3 class="text-xl font-bold mb-4 text-center">Select Month</h3>
+            <div class="flex justify-center gap-3 flex-wrap" id="monthSelector"></div>
+        </div>
+
+        <!-- Week Tabs -->
+        <div class="card p-6 mb-6 animate-in" style="animation-delay: 0.2s">
+            <div class="flex justify-center gap-2 md:gap-6 flex-wrap" id="weekTabs"></div>
+        </div>
+        
+        <!-- Schedule Container -->
+        <div id="scheduleContainer"></div>
+
+        <!-- Statistics -->
+        <div class="card p-6 mt-6 animate-in text-center" style="animation-delay: 0.4s">
+          <p>Powered By @<span class="font-bold">Divergent Developer Team</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Team members data (removed Shoaib, Sofik Sir, Tanin Sir, Kobir Khala)
+        const teamMembers = [
+            { id: 1, name: "Dr. Shahin/Dr. Fuyad" },
+            { id: 2, name: "Shourov" },
+            { id: 3, name: "Shakil/Sihab" },
+            { id: 4, name: "Mahmudul" },
+            { id: 5, name: "Simul" },
+            { id: 6, name: "Soumik" },
+            { id: 7, name: "TL Foysal Ahmed" },
+            { id: 8, name: "Faisal" },
+            { id: 9, name: "Monir" },
+            { id: 10, name: "Sakib" },
+            { id: 11, name: "Siam" },
+            { id: 12, name: "Shodorson" },
+            { id: 13, name: "Nur Nabi" },
+            { id: 14, name: "IT Kabbik" },
+            { id: 15, name: "Nahin" }
+        ];
+
+        const months = [
+            { name: 'February 2026', weeks: 4, startDay: 0 }, // Sunday
+            { name: 'March 2026', weeks: 4, startDay: 0 },
+            { name: 'April 2026', weeks: 4, startDay: 3 }, // Wednesday
+            { name: 'May 2026', weeks: 4, startDay: 5 },
+            { name: 'June 2026', weeks: 4, startDay: 1 },
+            { name: 'July 2026', weeks: 5, startDay: 3 },
+            { name: 'August 2026', weeks: 4, startDay: 6 },
+            { name: 'September 2026', weeks: 4, startDay: 2 },
+            { name: 'October 2026', weeks: 5, startDay: 4 },
+            { name: 'November 2026', weeks: 4, startDay: 0 },
+            { name: 'December 2026', weeks: 5, startDay: 2 }
+        ];
+
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+        const seatsPerSlot = 4;
+        const slotsPerDay = 5;
+
+        let currentMonth = 0;
+        let currentWeek = 1;
+        let allMonthSchedules = {};
+
+        // Generate unique schedule for each month
+        function generateMonthSchedule(monthIndex) {
+            const schedule = {};
+            const personStats = {};
+            const month = months[monthIndex];
+            
+            // Initialize stats tracking
+            teamMembers.forEach(person => {
+                personStats[person.id] = {
+                    name: person.name,
+                    slotCounts: [0, 0, 0, 0, 0],
+                    totalAppearances: 0
+                };
+            });
+
+            // Use month index as seed for different rotation patterns
+            const monthSeed = monthIndex * 7; // Different starting point for each month
+
+            for (let week = 1; week <= month.weeks; week++) {
+                schedule[week] = {};
+                
+                for (let dayIndex = 0; dayIndex < daysOfWeek.length; dayIndex++) {
+                    const day = daysOfWeek[dayIndex];
+                    schedule[week][day] = [];
+                    
+                    // Create 5 slots for the day
+                    let peoplePool = [...teamMembers];
+                    
+                    // Complex rotation based on month, week, and day for variety
+                    const rotationOffset = monthSeed + ((week - 1) * 5 + dayIndex) * 3;
+                    peoplePool = rotateArray(peoplePool, rotationOffset);
+                    
+                    // Additional shuffle based on month to ensure different patterns
+                    if (monthIndex % 2 === 1) {
+                        peoplePool = reverseRotate(peoplePool, week);
+                    }
+                    
+                    for (let slot = 0; slot < slotsPerDay; slot++) {
+                        const slotPeople = [];
+                        
+                        for (let seat = 0; seat < seatsPerSlot; seat++) {
+                            const personIndex = (slot * seatsPerSlot + seat) % peoplePool.length;
+                            const person = peoplePool[personIndex];
+                            slotPeople.push(person);
+                            
+                            // Track statistics
+                            personStats[person.id].slotCounts[slot]++;
+                            personStats[person.id].totalAppearances++;
+                        }
+                        
+                        schedule[week][day].push(slotPeople);
+                    }
+                }
+            }
+            
+            return { schedule, personStats };
+        }
+
+        // Helper function to rotate array
+        function rotateArray(arr, positions) {
+            const len = arr.length;
+            const rotation = positions % len;
+            return [...arr.slice(rotation), ...arr.slice(0, rotation)];
+        }
+
+        // Helper function for reverse rotation pattern
+        function reverseRotate(arr, weekNum) {
+            const rotation = weekNum % arr.length;
+            return [...arr.slice(-rotation), ...arr.slice(0, -rotation)];
+        }
+
+        // Generate all month schedules
+        function generateAllSchedules() {
+            months.forEach((month, index) => {
+                allMonthSchedules[index] = generateMonthSchedule(index);
+            });
+        }
+
+        // Create month selector buttons
+        function createMonthSelector() {
+            const container = document.getElementById('monthSelector');
+            let html = '';
+            
+            months.forEach((month, index) => {
+                const activeClass = index === currentMonth ? 'active' : '';
+                html += `<button class="month-selector ${activeClass}" onclick="selectMonth(${index})">
+                    ${month.name}
+                </button>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Create week tabs for current month
+        function createWeekTabs() {
+            const container = document.getElementById('weekTabs');
+            const month = months[currentMonth];
+            let html = '';
+            
+            for (let week = 1; week <= month.weeks; week++) {
+                const activeClass = week === currentWeek ? 'active' : '';
+                html += `<div class="week-tab ${activeClass} px-6 py-3" onclick="selectWeek(${week})">
+                    <div class="text-lg font-semibold">Week ${week}</div>
+                </div>`;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Select month
+        function selectMonth(monthIndex) {
+            currentMonth = monthIndex;
+            currentWeek = 1;
+            createMonthSelector();
+            createWeekTabs();
+            showSchedule();
+            displayStatistics();
+        }
+
+        // Select week
+        function selectWeek(weekNumber) {
+            currentWeek = weekNumber;
+            createWeekTabs();
+            showSchedule();
+        }
+
+        // Display schedule for current month and week
+        function showSchedule() {
+            const monthData = allMonthSchedules[currentMonth];
+            const weekSchedule = monthData.schedule[currentWeek];
+            
+            let html = '<div class="card p-6 animate-in">';
+            html += `<h2 class="text-3xl font-bold mb-6 text-center gradient-text">${months[currentMonth].name} - Week ${currentWeek}</h2>`;
+            html += '<div class="overflow-x-auto">';
+            html += '<div class="grid grid-cols-5 gap-4" style="min-width: 1000px;">';
+            
+            daysOfWeek.forEach(day => {
+                html += `<div class="day-column p-4">`;
+                html += `<h3 class="text-xl font-bold text-center mb-4 text-gray-800">${day}</h3>`;
+                
+                const daySlots = weekSchedule[day];
+                
+                daySlots.forEach((slotPeople, slotIndex) => {
+                    html += `<div class="mb-6">`;
+                    html += `<div class="text-xs font-semibold text-gray-500 mb-2 text-center">SLOT ${slotIndex + 1}</div>`;
+                    
+                    slotPeople.forEach(person => {
+                        html += `<div class="person-slot slot-${slotIndex + 1}">`;
+                        html += `<div class="font-semibold">${person.name}</div>`;
+                        html += `</div>`;
+                    });
+                    
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
+            });
+            
+            html += '</div></div></div>';
+            
+            document.getElementById('scheduleContainer').innerHTML = html;
+        }
+ 
+        // Initialize
+        generateAllSchedules();
+        createMonthSelector();
+        createWeekTabs();
+        showSchedule();
+        displayStatistics();
+    </script>
+</body>
+</html>
