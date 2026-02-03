@@ -216,17 +216,17 @@
         ];
 
         const months = [
-            { name: 'February 2026', weeks: 4, startDay: 0 },
-            { name: 'March 2026', weeks: 4, startDay: 0 },
-            { name: 'April 2026', weeks: 4, startDay: 3 },
-            { name: 'May 2026', weeks: 4, startDay: 5 },
-            { name: 'June 2026', weeks: 4, startDay: 1 },
-            { name: 'July 2026', weeks: 5, startDay: 3 },
-            { name: 'August 2026', weeks: 4, startDay: 6 },
-            { name: 'September 2026', weeks: 4, startDay: 2 },
-            { name: 'October 2026', weeks: 5, startDay: 4 },
-            { name: 'November 2026', weeks: 4, startDay: 0 },
-            { name: 'December 2026', weeks: 5, startDay: 2 }
+            { name: 'February 2026', month: 1, year: 2026, weeks: 4, startDay: 0 },
+            { name: 'March 2026', month: 2, year: 2026, weeks: 4, startDay: 0 },
+            { name: 'April 2026', month: 3, year: 2026, weeks: 4, startDay: 3 },
+            { name: 'May 2026', month: 4, year: 2026, weeks: 4, startDay: 5 },
+            { name: 'June 2026', month: 5, year: 2026, weeks: 4, startDay: 1 },
+            { name: 'July 2026', month: 6, year: 2026, weeks: 5, startDay: 3 },
+            { name: 'August 2026', month: 7, year: 2026, weeks: 4, startDay: 6 },
+            { name: 'September 2026', month: 8, year: 2026, weeks: 4, startDay: 2 },
+            { name: 'October 2026', month: 9, year: 2026, weeks: 5, startDay: 4 },
+            { name: 'November 2026', month: 10, year: 2026, weeks: 4, startDay: 0 },
+            { name: 'December 2026', month: 11, year: 2026, weeks: 5, startDay: 2 }
         ];
 
         const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
@@ -236,6 +236,23 @@
         let currentMonth = 0;
         let currentWeek = 1;
         let allMonthSchedules = {};
+
+        // Get current month index based on today's date
+        function getCurrentMonthIndex() {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonthNum = today.getMonth(); // 0-11 (Jan = 0, Feb = 1, etc.)
+            
+            // Find the index of the current month in our months array
+            for (let i = 0; i < months.length; i++) {
+                if (months[i].year === currentYear && months[i].month === currentMonthNum) {
+                    return i;
+                }
+            }
+            
+            // If current month not found, default to first month
+            return 0;
+        }
 
         // Shuffle array using Fisher-Yates algorithm with seed
         function seededShuffle(array, seed) {
@@ -257,7 +274,7 @@
             return arr;
         }
 
-        // Generate unique schedule for each month - FIXED: each person appears only once per day
+        // Generate unique schedule for each month - each person appears only once per day
         function generateMonthSchedule(monthIndex) {
             const schedule = {};
             const month = months[monthIndex];
@@ -274,7 +291,7 @@
                     // Shuffle team members for this specific day
                     const shuffledMembers = seededShuffle(teamMembers, seed);
                     
-                    // FIXED: Distribute people into slots - each person appears ONLY ONCE
+                    // Distribute people into slots - each person appears ONLY ONCE
                     // We have 16 people and 5 slots with 4 seats each (20 total seats)
                     // So 16 people will fill 4 complete slots, leaving 4 empty seats in the 5th slot
                     const daySlots = [];
@@ -395,8 +412,9 @@
             document.getElementById('scheduleContainer').innerHTML = html;
         }
  
-        // Initialize - Start with February 2026
+        // Initialize - Start with current month
         generateAllSchedules();
+        currentMonth = getCurrentMonthIndex();
         createMonthSelector();
         createWeekTabs();
         showSchedule();
