@@ -146,31 +146,6 @@
             margin: 2px;
         }
         
-        .badge-first {
-            background: #4caf50;
-            color: white;
-        }
-        
-        .badge-second {
-            background: #ff9800;
-            color: white;
-        }
-        
-        .badge-third {
-            background: #2196f3;
-            color: white;
-        }
-        
-        .badge-fourth {
-            background: #e91e63;
-            color: white;
-        }
-        
-        .badge-fifth {
-            background: #9c27b0;
-            color: white;
-        }
-        
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -185,30 +160,6 @@
         .animate-in {
             animation: slideIn 0.5s ease-out forwards;
         }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 8px;
-            background: white;
-            border: 1px solid var(--border);
-        }
-        
-        .legend-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .summary-card {
-            background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e9 100%);
-            border-left: 4px solid var(--primary);
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -219,6 +170,7 @@
             <div class="mt-4 flex justify-center gap-4 flex-wrap">
                 <div class="stats-badge bg-blue-100 text-blue-800">4 Seats per Slot</div>
                 <div class="stats-badge bg-purple-100 text-purple-800">5 Time Slots Daily</div>
+                <div class="stats-badge bg-green-100 text-green-800">One Lunch per Person per Day</div>
             </div>
         </div>
 
@@ -236,14 +188,14 @@
         <!-- Schedule Container -->
         <div id="scheduleContainer"></div>
 
-        <!-- Statistics -->
+        <!-- Footer -->
         <div class="card p-6 mt-6 animate-in text-center" style="animation-delay: 0.4s">
           <p>Powered By @<span class="font-bold">Divergent Developer Team</span></p>
         </div>
     </div>
 
     <script>
-        // Team members data - Fixed: Only one Doctor, Shakil and Sihab are separate people
+        // Team members data
         const teamMembers = [
             { id: 1, name: "Doctor" },
             { id: 2, name: "Shourov" },
@@ -264,9 +216,9 @@
         ];
 
         const months = [
-            { name: 'February 2026', weeks: 4, startDay: 0 }, // Sunday
+            { name: 'February 2026', weeks: 4, startDay: 0 },
             { name: 'March 2026', weeks: 4, startDay: 0 },
-            { name: 'April 2026', weeks: 4, startDay: 3 }, // Wednesday
+            { name: 'April 2026', weeks: 4, startDay: 3 },
             { name: 'May 2026', weeks: 4, startDay: 5 },
             { name: 'June 2026', weeks: 4, startDay: 1 },
             { name: 'July 2026', weeks: 5, startDay: 3 },
@@ -285,75 +237,71 @@
         let currentWeek = 1;
         let allMonthSchedules = {};
 
-        // Generate unique schedule for each month
+        // Shuffle array using Fisher-Yates algorithm with seed
+        function seededShuffle(array, seed) {
+            const arr = [...array];
+            let currentIndex = arr.length;
+            
+            // Simple seeded random number generator
+            function seededRandom() {
+                seed = (seed * 9301 + 49297) % 233280;
+                return seed / 233280;
+            }
+            
+            while (currentIndex !== 0) {
+                const randomIndex = Math.floor(seededRandom() * currentIndex);
+                currentIndex--;
+                [arr[currentIndex], arr[randomIndex]] = [arr[randomIndex], arr[currentIndex]];
+            }
+            
+            return arr;
+        }
+
+        // Generate unique schedule for each month - FIXED: each person appears only once per day
         function generateMonthSchedule(monthIndex) {
             const schedule = {};
-            const personStats = {};
             const month = months[monthIndex];
             
-            // Initialize stats tracking
-            teamMembers.forEach(person => {
-                personStats[person.id] = {
-                    name: person.name,
-                    slotCounts: [0, 0, 0, 0, 0],
-                    totalAppearances: 0
-                };
-            });
-
-            // Use month index as seed for different rotation patterns
-            const monthSeed = monthIndex * 7; // Different starting point for each month
-
             for (let week = 1; week <= month.weeks; week++) {
                 schedule[week] = {};
                 
                 for (let dayIndex = 0; dayIndex < daysOfWeek.length; dayIndex++) {
                     const day = daysOfWeek[dayIndex];
-                    schedule[week][day] = [];
                     
-                    // Create 5 slots for the day
-                    let peoplePool = [...teamMembers];
+                    // Create a seed based on month, week, and day for consistent but different schedules
+                    const seed = monthIndex * 1000 + week * 100 + dayIndex;
                     
-                    // Complex rotation based on month, week, and day for variety
-                    const rotationOffset = monthSeed + ((week - 1) * 5 + dayIndex) * 3;
-                    peoplePool = rotateArray(peoplePool, rotationOffset);
+                    // Shuffle team members for this specific day
+                    const shuffledMembers = seededShuffle(teamMembers, seed);
                     
-                    // Additional shuffle based on month to ensure different patterns
-                    if (monthIndex % 2 === 1) {
-                        peoplePool = reverseRotate(peoplePool, week);
-                    }
+                    // FIXED: Distribute people into slots - each person appears ONLY ONCE
+                    // We have 16 people and 5 slots with 4 seats each (20 total seats)
+                    // So 16 people will fill 4 complete slots, leaving 4 empty seats in the 5th slot
+                    const daySlots = [];
+                    let personIndex = 0;
                     
                     for (let slot = 0; slot < slotsPerDay; slot++) {
                         const slotPeople = [];
                         
                         for (let seat = 0; seat < seatsPerSlot; seat++) {
-                            const personIndex = (slot * seatsPerSlot + seat) % peoplePool.length;
-                            const person = peoplePool[personIndex];
-                            slotPeople.push(person);
-                            
-                            // Track statistics
-                            personStats[person.id].slotCounts[slot]++;
-                            personStats[person.id].totalAppearances++;
+                            // Only add person if we haven't used all 16 people yet
+                            if (personIndex < shuffledMembers.length) {
+                                slotPeople.push(shuffledMembers[personIndex]);
+                                personIndex++;
+                            }
                         }
                         
-                        schedule[week][day].push(slotPeople);
+                        // Only add slot if it has people in it
+                        if (slotPeople.length > 0) {
+                            daySlots.push(slotPeople);
+                        }
                     }
+                    
+                    schedule[week][day] = daySlots;
                 }
             }
             
-            return { schedule, personStats };
-        }
-
-        // Helper function to rotate array
-        function rotateArray(arr, positions) {
-            const len = arr.length;
-            const rotation = positions % len;
-            return [...arr.slice(rotation), ...arr.slice(0, rotation)];
-        }
-
-        // Helper function for reverse rotation pattern
-        function reverseRotate(arr, weekNum) {
-            const rotation = weekNum % arr.length;
-            return [...arr.slice(-rotation), ...arr.slice(0, -rotation)];
+            return { schedule };
         }
 
         // Generate all month schedules
@@ -447,7 +395,7 @@
             document.getElementById('scheduleContainer').innerHTML = html;
         }
  
-        // Initialize
+        // Initialize - Start with February 2026
         generateAllSchedules();
         createMonthSelector();
         createWeekTabs();
