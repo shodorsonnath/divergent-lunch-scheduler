@@ -161,11 +161,6 @@
             border-left: 4px solid #e91e63;
         }
         
-        .slot-5 {
-            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
-            border-left: 4px solid #9c27b0;
-        }
-        
         .person-slot:hover {
             transform: translateX(6px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -285,7 +280,7 @@
             </p>
             <div class="mt-4 flex justify-center gap-2 md:gap-4 flex-wrap">
                <div class="stats-badge bg-blue-100 text-blue-800">4 Seats per Slot</div>
-                <div class="stats-badge bg-purple-100 text-purple-800">5 Time Slots Daily</div>
+                <div class="stats-badge bg-purple-100 text-purple-800">4 Time Slots Daily</div>
                 <div class="stats-badge bg-green-100 text-green-800">16 Team Members</div>
             </div>
         </div>
@@ -322,35 +317,29 @@
     </div>
 
     <script>
-        const departments = {
-            outside: [
-                { id: 1, name: "Doctor", dept: "OutSide" },
-                { id: 2, name: "Shourov", dept: "OutSide" },
-                { id: 3, name: "Shakil", dept: "OutSide", restricted: true },
-                { id: 4, name: "Sihab", dept: "OutSide", restricted: true },
-                { id: 5, name: "Mahmudul", dept: "OutSide" },
-                { id: 6, name: "Simul", dept: "OutSide" },
-                { id: 7, name: "Soumik", dept: "OutSide" }
-            ],
-            developerRoom: [
-                { id: 8, name: "TL Faysal Ahmed", dept: "Developer Room" },
-                { id: 9, name: "Faisal", dept: "Developer Room" },
-                { id: 10, name: "Monir", dept: "Developer Room" },
-                { id: 11, name: "Sakib", dept: "Developer Room" },
-                { id: 12, name: "Siam", dept: "Developer Room" },
-                { id: 13, name: "Shodorson", dept: "Developer Room" },
-                { id: 14, name: "Nur Nabi", dept: "Developer Room" }
-            ],
-            kabbik: [
-                { id: 15, name: "KabbikShakil", dept: "Kabbik" },
-                { id: 16, name: "Nahin", dept: "Kabbik" }
-            ]
-        };
-
+        // Team members with departments and special groupings
         const teamMembers = [
-            ...departments.outside,
-            ...departments.developerRoom,
-            ...departments.kabbik
+            // Outside Department
+            { id: 1, name: "Doctor", dept: "OutSide" },
+            { id: 2, name: "Shourov", dept: "OutSide" },
+            { id: 3, name: "Shakil", dept: "OutSide", cannotSitWith: [4], exception: true },
+            { id: 4, name: "Sihab", dept: "OutSide", cannotSitWith: [3], exception: true },
+            { id: 5, name: "Mahmudul", dept: "OutSide" },
+            { id: 6, name: "Simul", dept: "OutSide" },
+            { id: 7, name: "Soumik", dept: "OutSide" },
+            
+            // Developer Room
+            { id: 8, name: "TL Faysal Ahmed", dept: "Developer Room" },
+            { id: 9, name: "Faisal", dept: "Developer Room" },
+            { id: 10, name: "Monir", dept: "Developer Room" },
+            { id: 11, name: "Sakib", dept: "Developer Room", group: "trio" },
+            { id: 12, name: "Siam", dept: "Developer Room", group: "trio" },
+            { id: 13, name: "Shodorson", dept: "Developer Room", group: "trio" },
+            { id: 14, name: "Nur Nabi", dept: "Developer Room" },
+            
+            // Kabbik Department
+            { id: 15, name: "KabbikShakil", dept: "Kabbik" },
+            { id: 16, name: "Nahin", dept: "Kabbik" }
         ];
 
         const months = [
@@ -368,14 +357,29 @@
             { name: 'Dec 2026', month: 11, year: 2026, daysInMonth: 31, startDay: 2 }
         ];
 
-        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
         const seatsPerSlot = 4;
-        const slotsPerDay = 5;
+        const slotsPerDay = 4;
 
         let currentMonth = 0;
         let currentWeek = 1;
         let allMonthSchedules = {};
         let todayInfo = null;
+
+        // Seeded random for consistent schedules
+        function seededRandom(seed) {
+            const x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function shuffleArray(arr, seed) {
+            const shuffled = [...arr];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(seededRandom(seed + i) * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
 
         function getTodayInfo() {
             const today = new Date();
@@ -384,8 +388,8 @@
             const date = today.getDate();
             const dayOfWeek = today.getDay();
             
-            let weekdayIndex = dayOfWeek - 1;
-            if (weekdayIndex < 0 || weekdayIndex > 4) {
+            let weekdayIndex = dayOfWeek;
+            if (weekdayIndex > 4 || weekdayIndex < 0) {
                 weekdayIndex = null;
             }
             
@@ -421,130 +425,6 @@
             return { monthIndex, weekNum };
         }
 
-        function seededRandom(seed) {
-            const x = Math.sin(seed++) * 10000;
-            return x - Math.floor(x);
-        }
-
-        function shuffleArray(arr, seed) {
-            const shuffled = [...arr];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(seededRandom(seed + i) * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-            return shuffled;
-        }
-
-        function getDepartmentOrder(weekNumber) {
-            const deptNames = ['outside', 'developerRoom', 'kabbik'];
-            const rotatedIndex = (weekNumber - 1) % deptNames.length;
-            const rotated = [];
-            
-            for (let i = 0; i < deptNames.length; i++) {
-                const index = (rotatedIndex + i) % deptNames.length;
-                rotated.push(deptNames[index]);
-            }
-            
-            return rotated;
-        }
-
-        function createWeekRotation(weekNumber, seed) {
-            const deptOrder = getDepartmentOrder(weekNumber);
-            const allPeople = [];
-            
-            deptOrder.forEach(deptName => {
-                const deptMembers = departments[deptName];
-                const shuffled = shuffleArray(deptMembers, seed + deptName.charCodeAt(0));
-                allPeople.push(...shuffled);
-            });
-            
-            return allPeople;
-        }
-
-        function hasBothRestricted(people) {
-            const hasShakil = people.some(p => p.name === "Shakil");
-            const hasSihab = people.some(p => p.name === "Sihab");
-            return hasShakil && hasSihab;
-        }
-
-        function generateDaySchedule(weekNumber, dayIndex, seed) {
-            const maxAttempts = 1000;
-            
-            for (let attempt = 0; attempt < maxAttempts; attempt++) {
-                const rotated = createWeekRotation(weekNumber, seed + attempt);
-                const daySlots = [];
-                
-                const restricted = rotated.filter(p => p.restricted);
-                const nonRestricted = rotated.filter(p => !p.restricted);
-                
-                let restrictedIndex = 0;
-                let nonRestrictedIndex = 0;
-                let isValid = true;
-                
-                for (let slot = 0; slot < 3; slot++) {
-                    const slotPeople = [];
-                    
-                    if (restrictedIndex < restricted.length) {
-                        slotPeople.push(restricted[restrictedIndex]);
-                        restrictedIndex++;
-                    }
-                    
-                    while (slotPeople.length < seatsPerSlot && nonRestrictedIndex < nonRestricted.length) {
-                        slotPeople.push(nonRestricted[nonRestrictedIndex]);
-                        nonRestrictedIndex++;
-                    }
-                    
-                    if (hasBothRestricted(slotPeople)) {
-                        isValid = false;
-                        break;
-                    }
-                    
-                    daySlots.push(slotPeople);
-                }
-                
-                if (!isValid) continue;
-                
-                for (let slot = 3; slot < slotsPerDay; slot++) {
-                    const slotPeople = [];
-                    
-                    while (slotPeople.length < seatsPerSlot && nonRestrictedIndex < nonRestricted.length) {
-                        slotPeople.push(nonRestricted[nonRestrictedIndex]);
-                        nonRestrictedIndex++;
-                    }
-                    
-                    daySlots.push(slotPeople);
-                }
-                
-                const shakilSlot = daySlots.findIndex(slot => slot.some(p => p.name === "Shakil"));
-                const sihabSlot = daySlots.findIndex(slot => slot.some(p => p.name === "Sihab"));
-                
-                if ((shakilSlot === -1 || shakilSlot < 3) && 
-                    (sihabSlot === -1 || sihabSlot < 3) &&
-                    !daySlots.some(slot => hasBothRestricted(slot))) {
-                    return daySlots;
-                }
-            }
-            
-            return generateFallbackSchedule(weekNumber, seed);
-        }
-
-        function generateFallbackSchedule(weekNumber, seed) {
-            const rotated = createWeekRotation(weekNumber, seed);
-            const daySlots = [];
-            let personIndex = 0;
-            
-            for (let slot = 0; slot < slotsPerDay; slot++) {
-                const slotPeople = [];
-                for (let seat = 0; seat < seatsPerSlot && personIndex < rotated.length; seat++) {
-                    slotPeople.push(rotated[personIndex]);
-                    personIndex++;
-                }
-                daySlots.push(slotPeople);
-            }
-            
-            return daySlots;
-        }
-
         function calculateWeeksInMonth(monthIndex) {
             const month = months[monthIndex];
             const totalDays = month.daysInMonth;
@@ -561,6 +441,139 @@
             return Math.ceil(weekdayCount / 5);
         }
 
+        // Improved scheduling algorithm with proper rotation
+        function generateDaySchedule(monthIndex, weekNumber, dayIndex, globalDayCounter) {
+            const slots = [[], [], [], []];
+            
+            // Separate members by category
+            const trio = teamMembers.filter(p => p.group === 'trio');
+            const exceptions = teamMembers.filter(p => p.exception); // Shakil & Sihab
+            const deptMembers = {
+                'OutSide': teamMembers.filter(p => p.dept === 'OutSide' && !p.exception),
+                'Developer Room': teamMembers.filter(p => p.dept === 'Developer Room' && !p.group),
+                'Kabbik': teamMembers.filter(p => p.dept === 'Kabbik')
+            };
+            
+            // Calculate rotation for trio - they should rotate through ALL slots fairly
+            // Using globalDayCounter ensures continuous rotation across weeks
+            const trioSlotIndex = globalDayCounter % 4;
+            
+            // Assign trio to their rotated slot
+            trio.forEach(person => {
+                slots[trioSlotIndex].push(person);
+            });
+            
+            // Track assigned people
+            const assigned = new Set(trio.map(p => p.id));
+            
+            // Create a pool of all non-trio members for this day
+            let availablePool = [];
+            
+            // Add department members with rotation
+            const deptOrder = ['OutSide', 'Developer Room', 'Kabbik'];
+            const startDept = globalDayCounter % 3;
+            
+            for (let i = 0; i < 3; i++) {
+                const deptIndex = (startDept + i) % 3;
+                const dept = deptOrder[deptIndex];
+                const shuffled = shuffleArray(deptMembers[dept], globalDayCounter * 100 + deptIndex);
+                availablePool = availablePool.concat(shuffled);
+            }
+            
+            // Add exceptions (Shakil & Sihab) at specific positions for variety
+            const exceptionsSeed = globalDayCounter * 13 + monthIndex * 7;
+            const shuffledExceptions = shuffleArray(exceptions, exceptionsSeed);
+            
+            // Insert exceptions at different positions in the pool based on day
+            const insertPos = globalDayCounter % (availablePool.length + 1);
+            availablePool.splice(insertPos, 0, ...shuffledExceptions);
+            
+            // Fill slots with proper distribution
+            let poolIndex = 0;
+            
+            // Create a slot filling order that rotates to ensure everyone gets all slots
+            const slotOrder = [];
+            for (let i = 0; i < 4; i++) {
+                slotOrder.push((trioSlotIndex + i + 1) % 4);
+            }
+            
+            // Fill each slot
+            for (const slotIdx of slotOrder) {
+                let attempts = 0;
+                const maxAttempts = availablePool.length * 2;
+                
+                while (slots[slotIdx].length < 4 && poolIndex < availablePool.length && attempts < maxAttempts) {
+                    const person = availablePool[poolIndex];
+                    attempts++;
+                    
+                    if (assigned.has(person.id)) {
+                        poolIndex++;
+                        continue;
+                    }
+                    
+                    // Check constraints
+                    let canAdd = true;
+                    
+                    // Check cannotSitWith constraint
+                    if (person.cannotSitWith) {
+                        for (const conflictId of person.cannotSitWith) {
+                            if (slots[slotIdx].some(p => p.id === conflictId)) {
+                                canAdd = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (canAdd) {
+                        slots[slotIdx].push(person);
+                        assigned.add(person.id);
+                        poolIndex++;
+                    } else {
+                        // Try to find an alternative slot for this person
+                        let placed = false;
+                        for (let altIdx = 0; altIdx < 4; altIdx++) {
+                            if (altIdx === slotIdx || slots[altIdx].length >= 4) continue;
+                            
+                            let canAddToAlt = true;
+                            if (person.cannotSitWith) {
+                                for (const conflictId of person.cannotSitWith) {
+                                    if (slots[altIdx].some(p => p.id === conflictId)) {
+                                        canAddToAlt = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (canAddToAlt) {
+                                slots[altIdx].push(person);
+                                assigned.add(person.id);
+                                placed = true;
+                                break;
+                            }
+                        }
+                        
+                        poolIndex++;
+                    }
+                }
+            }
+            
+            // Final pass: fill any remaining empty seats
+            poolIndex = 0;
+            for (let slotIdx = 0; slotIdx < 4; slotIdx++) {
+                while (slots[slotIdx].length < 4 && poolIndex < availablePool.length) {
+                    const person = availablePool[poolIndex];
+                    poolIndex++;
+                    
+                    if (!assigned.has(person.id)) {
+                        slots[slotIdx].push(person);
+                        assigned.add(person.id);
+                    }
+                }
+            }
+            
+            return slots;
+        }
+
         function generateMonthSchedule(monthIndex) {
             const schedule = {};
             const month = months[monthIndex];
@@ -568,14 +581,24 @@
             
             month.weeks = totalWeeks;
             
+            // Calculate global day counter for continuous rotation
+            let globalDayCounter = 0;
+            
+            // Add days from previous months
+            for (let m = 0; m < monthIndex; m++) {
+                const prevMonth = months[m];
+                const prevWeeks = calculateWeeksInMonth(m);
+                globalDayCounter += prevWeeks * 5; // 5 working days per week
+            }
+            
             for (let week = 1; week <= totalWeeks; week++) {
                 schedule[week] = {};
                 
                 for (let dayIndex = 0; dayIndex < daysOfWeek.length; dayIndex++) {
                     const day = daysOfWeek[dayIndex];
-                    const seed = monthIndex * 10000 + week * 100 + dayIndex;
-                    const daySlots = generateDaySchedule(week, dayIndex, seed);
+                    const daySlots = generateDaySchedule(monthIndex, week, dayIndex, globalDayCounter);
                     schedule[week][day] = daySlots;
+                    globalDayCounter++;
                 }
             }
             
@@ -761,6 +784,7 @@
             resizeTimer = setTimeout(showSchedule, 250);
         });
 
+        // Initialize
         generateAllSchedules();
         const current = getCurrentMonthAndWeek();
         currentMonth = current.monthIndex;
